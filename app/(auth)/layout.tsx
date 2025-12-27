@@ -4,8 +4,6 @@ import { usePathname } from "next/navigation";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-
-    // Determine left panel text based on route
     const leftText = pathname === "/login"
         ? {
             title: "Where real connections begin",
