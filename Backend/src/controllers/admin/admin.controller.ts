@@ -5,24 +5,39 @@ import { CreateUserDto, UpdateUserDto } from "../../dtos/user.dto";
 let adminUserService = new AdminUserService();
 export class AdminUserController {
     async createUser(req: Request, res: Response) {
-        // same as register user controller
-        try {
-            const parsedData = CreateUserDto.safeParse(req.body);
-            if (!parsedData.success) {
-                return res.status(400).json(
-                    { success: false, message: z.prettifyError(parsedData.error) }
-                ); // z.prettifyError - better error messages (zod)
-            }
-            const newUser = await adminUserService.createUser(parsedData.data);
-            return res.status(201).json(
-                { success: true, data: newUser, message: "Register success" }
-            );
-        } catch (error: Error | any) {
-            return res.status(error.statusCode || 500).json(
-                { success: false, message: error.message || "Internal Server Error" }
-            );
+    try {
+        // 1. Validate request body using Zod
+        const parsedData = CreateUserDto.safeParse(req.body);
+        if (!parsedData.success) {
+            return res.status(400).json({
+                success: false,
+                message: z.prettifyError(parsedData.error),
+            });
         }
+
+        // 2. Force role to 'admin' and prepare user data
+        const userData = {
+            ...parsedData.data,
+            role: "admin", // ensure admin role
+        };
+
+        // 3. Create user via service
+        const newUser = await adminUserService.createUser(userData);
+
+        // 4. Return response
+        return res.status(201).json({
+            success: true,
+            data: newUser,
+            message: "Admin user created successfully",
+        });
+    } catch (error: any) {
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
     }
+}
+
     async getUserById(req: Request, res: Response) {
         try {
             const userId = req.params.id; // from url /api/admin/users/:id
