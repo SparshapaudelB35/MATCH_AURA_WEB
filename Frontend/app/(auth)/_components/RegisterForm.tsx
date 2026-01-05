@@ -114,14 +114,14 @@ export default function RegisterForm() {
 
                 {/* Submit Button */}
                 <button
-                type="submit"
-                disabled={isSubmitting || pending}
-                className="group relative h-16 w-full rounded-3xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white shadow-2xl text-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-70"
-            >
-                <span className="relative z-10">
-                    {isSubmitting || pending ? "Finding your profile..." : "Join Now"}
-                </span>
-            </button>
+                    type="submit"
+                    disabled={isSubmitting || pending}
+                    className="group relative h-16 w-full rounded-3xl bg-gradient-to-r from-pink-500 to-rose-500 font-bold text-white shadow-2xl text-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-70"
+                >
+                    <span className="relative z-10">
+                        {isSubmitting || pending ? "Finding your profile..." : "Join Now"}
+                    </span>
+                </button>
 
                 <p className="text-[15px] text-center text-zinc-400 px-4">
                     By clicking "Join Now", you agree to our <span className="underline">Terms</span> and <span className="underline">Privacy Policy</span>.
