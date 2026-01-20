@@ -27,7 +27,6 @@ export default function LoginForm() {
         try {
             const res = await handleLogin(values);
             if (!res.success) {
-                console.log("Login error:", res.message);
                 throw new Error(res.message || "Login failed");
             }
             // handle redirect (optional)
