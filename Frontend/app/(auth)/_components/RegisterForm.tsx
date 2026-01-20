@@ -1,11 +1,13 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { RegisterData, registerSchema } from "../schema";
+import { handleRegister } from "@/lib/actions/auth-action";
 
 export default function RegisterForm() {
     const router = useRouter();
@@ -16,18 +18,28 @@ export default function RegisterForm() {
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<RegisterData>({
-        resolver: zodResolver(registerSchema),
-        mode: "onSubmit",
+        resolver: zodResolver(registerSchema)
     });
+    const [error, setError] = useState("");
+    const submit = async (data: RegisterData) => {
+         console.log("Form data:", data);
+        setError("");
+        try {
+            const res = await handleRegister(data);
 
-    const submit = async (values: RegisterData) => {
-        startTransition(async () => {
-            // Simulate account creation
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            console.log("Welcome to the community!", values);
+            if (!res.success) {
+                setError(res.message || "Registration failed");
+                return; // stop here, no throw needed
+            }
+
+            // Success → redirect
             router.push("/login");
-        });
+        } catch (err: Error | any) {
+            console.error("Unexpected error:", err);
+            setError(err.message || "Registration failed");
+        }
     };
+
 
     return (
         <div className="w-full max-w-xl p-14 space-y-12 bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-100 dark:border-zinc-800">
@@ -41,6 +53,11 @@ export default function RegisterForm() {
             </div>
 
             <form onSubmit={handleSubmit(submit)} className="space-y-4">
+                {error && (
+                    <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800">
+                        <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+                    </div>
+                )}
                 <div className="space-y-2">
                     <label className="text-sm font-bold uppercase tracking-wider text-zinc-400 ml-1" htmlFor="email">
                         Full Name
@@ -100,14 +117,14 @@ export default function RegisterForm() {
                             </label>
                         </div>
                         <input
-                            id="password"
+                            id="confirm-password"
                             type="password"
-                            {...register("password")}
+                            {...register("confirmPassword")}
                             placeholder="••••••••"
                             className="h-16 w-full rounded-3xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-6 text-lg outline-none transition-all focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                         />
-                        {errors.password?.message && (
-                            <p className="text-sm text-rose-500 font-medium ml-1">{errors.password.message}</p>
+                        {errors.confirmPassword?.message && (
+                            <p className="text-sm text-rose-500 font-medium ml-1">{errors.confirmPassword.message}</p>
                         )}
                     </div>
                 </div>

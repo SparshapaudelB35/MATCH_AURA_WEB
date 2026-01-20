@@ -1,35 +1,29 @@
 import z from "zod";
 import { UserSchema } from "../types/user.type";
-
-export const CreateUserDto = UserSchema.pick( // reuse schema
+// re-use UserSchema from types
+export const CreateUserDTO = UserSchema.pick(
     {
-        username: true,
-        email: true,
-        password: true,
         firstName: true,
         lastName: true,
+        email: true,
+        username: true,
+        password: true
     }
-).extend( // add new attribute to schema
+).extend( // add new attribute to zod
     {
-        confirmPassword: z.string().min(6),
+        confirmPassword: z.string().min(6)
     }
-).refine( // custom validation
+).refine( // extra validation for confirmPassword
     (data) => data.password === data.confirmPassword,
     {
         message: "Passwords do not match",
-        path: ["confirmPassword"],
+        path: ["confirmPassword"]
     }
-);
+)
+export type CreateUserDTO = z.infer<typeof CreateUserDTO>;
 
-
-export type CreateUserDto = z.infer<typeof CreateUserDto>;
-
-export const UpdateUserDto = CreateUserDto.partial(); // all optional fields
-export type UpdateUserDto = z.infer<typeof UpdateUserDto>;
-
-// can use UserSchema or make a new schema
-export const LoginUserDto = z.object({
-    username: z.string().min(3),
-    password: z.string().min(6),
+export const LoginUserDTO = z.object({
+    email: z.email(),
+    password: z.string().min(6)
 });
-export type LoginUserDto = z.infer<typeof LoginUserDto>;
+export type LoginUserDTO = z.infer<typeof LoginUserDTO>;

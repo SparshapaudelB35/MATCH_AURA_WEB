@@ -1,32 +1,32 @@
-import { IUser, UserModel } from "../models/user.model";
-
+import { UserModel, IUser } from "../models/user.model";
 export interface IUserRepository {
-    getUserByUsername(username: string): Promise<IUser | null>;
     getUserByEmail(email: string): Promise<IUser | null>;
-    // additional 
-    createUser(data: Partial<IUser>): Promise<IUser>;
-    getUserById(id: string): Promise<IUser | null>; // get one
-    getAllUsers(): Promise<IUser[]>; // get all 
-    updateOneUser(id: string, data: Partial<IUser>): Promise<IUser | null>; // update one
-    deleteOneUser(id: string): Promise<boolean | null>; // delete one 
+    getUserByUsername(username: string): Promise<IUser | null>;
+    // Additional
+    // 5 common database queries for entity
+    createUser(userData: Partial<IUser>): Promise<IUser>;
+    getUserById(id: string): Promise<IUser | null>;
+    getAllUsers(): Promise<IUser[]>;
+    updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null>;
+    deleteUser(id: string): Promise<boolean>;
 }
-// UserModel -> db.users collection
+// MongoDb Implementation of UserRepository
 export class UserRepository implements IUserRepository {
-    async createUser(data: Partial<IUser>): Promise<IUser> {
-        const user = new UserModel(data); // MongoDb Model
+    async createUser(userData: Partial<IUser>): Promise<IUser> {
+        const user = new UserModel(userData); 
         return await user.save();
     }
     async getUserByEmail(email: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({ "email": email });
+        const user = await UserModel.findOne({ "email": email })
         return user;
     }
     async getUserByUsername(username: string): Promise<IUser | null> {
-        const user = await UserModel.findOne({ "username": username });
+        const user = await UserModel.findOne({ "username": username })
         return user;
     }
 
     async getUserById(id: string): Promise<IUser | null> {
-        // UserModel.findOne({"_id": id})
+        // UserModel.findOne({ "_id": id });
         const user = await UserModel.findById(id);
         return user;
     }
@@ -34,14 +34,16 @@ export class UserRepository implements IUserRepository {
         const users = await UserModel.find();
         return users;
     }
-    async updateOneUser(id: string, data: Partial<IUser>): Promise<IUser | null> {
-        // UserModel.updateOne({"_id": id}, {$set: data})
-        const updatedUser = await UserModel.findByIdAndUpdate(id, data, { new: true });
+    async updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
+        // UserModel.updateOne({ _id: id }, { $set: updateData });
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            id, updateData, { new: true } // return the updated document
+        );
         return updatedUser;
     }
-    async deleteOneUser(id: string): Promise<boolean | null> {
-        // UserModel.deleteOne({"_id": id})
+    async deleteUser(id: string): Promise<boolean> {
+        // UserModel.deleteOne({ _id: id });
         const result = await UserModel.findByIdAndDelete(id);
-        return result ? true : null;
+        return result ? true : false;
     }
 }
