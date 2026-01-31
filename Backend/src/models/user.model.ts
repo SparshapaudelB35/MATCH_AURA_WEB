@@ -1,4 +1,3 @@
-
 import mongoose, { Document, Schema } from "mongoose";
 import { UserType } from "../types/user.type";
 const UserSchema: Schema = new Schema<UserType>(
@@ -12,7 +11,8 @@ const UserSchema: Schema = new Schema<UserType>(
             type: String,
             enum: ['user', 'admin'],
             default: 'user',
-        }
+        },
+        imageUrl: { type: String , required: false},
     },
     {
         timestamps: true, // auto createdAt and updatedAt

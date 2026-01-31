@@ -1,113 +1,107 @@
-import { AdminUserService } from "../../services/admin/user.service";
-import { Request, Response } from "express";
+import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../../dtos/user.dto";
+import { Request, Response, NextFunction } from "express";
 import z from "zod";
-import { CreateUserDto, UpdateUserDto } from "../../dtos/user.dto";
+import { AdminUserService } from "../../services/admin/user.service";
+
 let adminUserService = new AdminUserService();
+
 export class AdminUserController {
-    async createUser(req: Request, res: Response) {
-    try {
-        // 1. Validate request body using Zod
-        const parsedData = CreateUserDto.safeParse(req.body);
-        if (!parsedData.success) {
-            return res.status(400).json({
-                success: false,
-                message: z.prettifyError(parsedData.error),
-            });
-        }
-
-        // 2. Force role to 'admin' and prepare user data
-        const userData = {
-            ...parsedData.data,
-            role: "admin", // ensure admin role
-        };
-
-        // 3. Create user via service
-        const newUser = await adminUserService.createUser(userData);
-
-        // 4. Return response
-        return res.status(201).json({
-            success: true,
-            data: newUser,
-            message: "Admin user created successfully",
-        });
-    } catch (error: any) {
-        return res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Internal Server Error",
-        });
-    }
-}
-
-    async getUserById(req: Request, res: Response) {
+    async createUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = req.params.id; // from url /api/admin/users/:id
-            const user = await adminUserService.getUserById(userId);
-            return res.status(200).json(
-                { success: true, data: user, message: "User Fetched" }
-            )
+            const parsedData = CreateUserDTO.safeParse(req.body); // validate request body
+            if (!parsedData.success) { // validation failed
+                return res.status(400).json(
+                    { success: false, message: z.prettifyError(parsedData.error) }
+                )
+            }
+            if(req.file){   
+                parsedData.data.imageUrl = `/uploads/${req.file.filename}`;
+            }
+            const userData: CreateUserDTO = parsedData.data;
+            const newUser = await adminUserService.createUser(userData);
+            return res.status(201).json(
+                { success: true, message: "User Created", data: newUser }
+            );
         } catch (error: Error | any) {
-            return res.status(error.statusCode || 500).json(
+            return res.status(error.statusCode ?? 500).json(
                 { success: false, message: error.message || "Internal Server Error" }
             );
         }
     }
-    async getAllUsers(req: Request, res: Response) {
+
+    async getAllUsers(req: Request, res: Response, next: NextFunction) {
         try {
             const users = await adminUserService.getAllUsers();
             return res.status(200).json(
-                { success: true, data: users, message: "Users Fetched" }
-            )
+                { success: true, data: users, message: "All Users Retrieved" }
+            );
         } catch (error: Error | any) {
-            return res.status(error.statusCode || 500).json(
+            return res.status(error.statusCode ?? 500).json(
                 { success: false, message: error.message || "Internal Server Error" }
             );
         }
     }
-    async updateOneUser(req: Request, res: Response) {
-        try {
-            const userId = req.params.id;
-            const parsedData = UpdateUserDto.safeParse(req.body);
-            if (!parsedData.success) {
-                return res.status(400).json(
-                    { success: false, message: z.prettifyError(parsedData.error) }
-                ); // z.prettifyError - better error messages (zod)
-            }
-            const updatedUser = await adminUserService.updateOneUser(userId, parsedData.data);
-            return res.status(200).json(
-                { success: true, data: updatedUser, message: "User Updated" }
-            )
-        } catch (error: Error | any) {
-            return res.status(error.statusCode || 500).json(
-                { success: false, message: error.message || "Internal Server Error" }
+
+   async updateUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        // Ensure userId is string
+        const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+        const parsedData = UpdateUserDTO.safeParse(req.body); // validate request body
+        if (!parsedData.success) {
+            return res.status(400).json(
+                { success: false, message: z.prettifyError(parsedData.error) }
             );
         }
-    }
-    async deleteOneUser(req: Request, res: Response) {
-        try {
-            const userId = req.params.id;
-            await adminUserService.deleteOneUser(userId);
-            return res.status(200).json(
-                { success: true, message: "User Deleted" }
-            )
-        } catch (
-        error: Error | any) {
-            return res.status(error.statusCode || 500).json(
-                { success: false, message: error.message || "Internal Server Error" }
-            );
+
+        if (req.file) {
+            parsedData.data.imageUrl = `/uploads/${req.file.filename}`;
         }
+        const updateData: UpdateUserDTO = parsedData.data;
+        const updatedUser = await adminUserService.updateUser(userId, updateData);
+
+        return res.status(200).json(
+            { success: true, message: "User Updated", data: updatedUser }
+        );
+    } catch (error: Error | any) {
+        return res.status(error.statusCode ?? 500).json(
+            { success: false, message: error.message || "Internal Server Error" }
+        );
     }
 }
-// Classroom task
-// 1. Create routes app.use('/api/admin/users', adminUserRoutes);
-// 2. Route paths:
-// POST /api/admin/users/ -> createUser
-// GET /api/admin/users/:id -> getUserById
-// GET /api/admin/users/ -> getAllUsers
-// PUT /api/admin/users/:id -> updateOneUser
-// DELETE /api/admin/users/:id -> deleteOneUser
-// 3. Create service methods in AdminUserService for getAllUsers, updateOneUser, deleteOneUser
-// - Delete and Update add logic - check if user exists, if not throw 404 error
-// 5. Create controller methods in 
-// - AdminUserController for getAllUsers, updateOneUser, deleteOneUser
-// Use UserRepository methods already created
-// Test using Postman
+
+async deleteUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+        const deleted = await adminUserService.deleteUser(userId);
+        if (!deleted) {
+            return res.status(404).json(
+                { success: false, message: "User not found" }
+            );
+        }
+        return res.status(200).json(
+            { success: true, message: "User Deleted" }
+        );
+    } catch (error: Error | any) {
+        return res.status(error.statusCode ?? 500).json(
+            { success: false, message: error.message || "Internal Server Error" }
+        );
+    }
+}
+
+async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+        const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+        const user = await adminUserService.getUserById(userId);
+        return res.status(200).json(
+            { success: true, data: user, message: "Single User Retrieved" }
+        );
+    } catch (error: Error | any) {
+        return res.status(error.statusCode ?? 500).json(
+            { success: false, message: error.message || "Internal Server Error" }
+        );
+    }
+}
+}
