@@ -1,8 +1,9 @@
 "use server";
-import { loginUser, registerUser } from "@/lib/api/auth"
+import { fetchWhoAmI, loginUser, registerUser, updateProfile } from "@/lib/api/auth"
 import { LoginData, RegisterData } from "@/app/(auth)/schema"
 import { setAuthToken, setUserData, clearAuthCookies } from "../cookie"
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 export const handleRegister = async (data: RegisterData) => {
     try {
         // Split full name into firstName / lastName
@@ -64,4 +65,44 @@ export const handleLogin = async (data: LoginData) => {
 export const handleLogout = async () => {
     await clearAuthCookies();
     return redirect('/login');
+}
+
+export const handleWhoAmI = async () => {
+    try{
+        const result = await fetchWhoAmI();
+        if(result.success){
+            return {
+                success:true,
+                message:'User data fetched successfully',
+                data:result.data
+            }
+        }
+        return {
+            success:false,
+            message:result.message || 'Failed to fetch user data'
+        }
+    }catch(error: Error | any){
+        return {
+            success:false,
+            message:error.message || 'WhoAmI action failed'
+        }
+    }
+}
+
+export async function handleUpdateProfile(profileData: FormData) {
+    try {
+        const result = await updateProfile(profileData);
+        if (result.success) {
+            await setUserData(result.data); // update cookie 
+            revalidatePath('/user/profile'); // revalidate profile page/ refresh new data
+            return {
+                success: true,
+                message: 'Profile updated successfully',
+                data: result.data
+            };
+        }
+        return { success: false, message: result.message || 'Failed to update profile' };
+    } catch (error: Error | any) {
+        return { success: false, message: error.message };
+    }
 }
