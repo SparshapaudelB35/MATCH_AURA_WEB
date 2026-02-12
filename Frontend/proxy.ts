@@ -23,10 +23,16 @@ export async function proxy(req: NextRequest) {
 
   // 2. Logged-in user accessing public paths
   if (user && isPublicPath) {
-    return NextResponse.redirect(new URL("/", req.url));
+    const target = user.role === "admin" ? "/admin/dashboard" : "/auth/dashboard";
+    return NextResponse.redirect(new URL(target, req.url));
   }
 
-  // 3. Non-admin user trying to access admin routes
+  // 3. Admins should land on the admin dashboard instead of user dashboard
+  if (user && isProtectedPath && user.role === "admin") {
+    return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+  }
+
+  // 4. Non-admin user trying to access admin routes
   if (user && isAdminPath && user.role !== "admin") {
     return NextResponse.redirect(new URL("/", req.url));
   }

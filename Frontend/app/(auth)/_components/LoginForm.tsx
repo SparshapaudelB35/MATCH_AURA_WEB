@@ -30,8 +30,9 @@ export default function LoginForm() {
                 throw new Error(res.message || "Login failed");
             }
             // handle redirect (optional)
+            const isAdmin = res.data?.role === "admin";
             startTransition(() => {
-                router.push("/auth/dashboard");
+                router.push(isAdmin ? "/admin/dashboard" : "/auth/dashboard");
             });
         } catch (err: Error | any) {
             setError(err.message || "Login failed");
