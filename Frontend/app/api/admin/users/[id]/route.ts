@@ -5,7 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001"
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = await getAuthToken();
@@ -16,7 +16,8 @@ export async function DELETE(
       );
     }
 
-    const id = params?.id || req.url.split("/").pop();
+    const { id: routeId } = await params;
+    const id = routeId || req.url.split("/").pop();
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing user id" },
@@ -54,7 +55,7 @@ export async function DELETE(
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = await getAuthToken();
@@ -65,7 +66,8 @@ export async function GET(
       );
     }
 
-    const id = params?.id || req.url.split("/").pop();
+    const { id: routeId } = await params;
+    const id = routeId || req.url.split("/").pop();
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing user id" },
@@ -103,7 +105,7 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = await getAuthToken();
@@ -114,7 +116,8 @@ export async function PUT(
       );
     }
 
-    const id = params?.id || req.url.split("/").pop();
+    const { id: routeId } = await params;
+    const id = routeId || req.url.split("/").pop();
     if (!id) {
       return NextResponse.json(
         { success: false, message: "Missing user id" },
