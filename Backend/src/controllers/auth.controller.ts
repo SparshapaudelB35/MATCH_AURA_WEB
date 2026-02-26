@@ -3,6 +3,21 @@ import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
 import { Request, Response } from "express";
 import z from "zod";
 let userService = new UserService();
+
+const isOnboardingComplete = (user: any) => {
+    return Boolean(
+        user?.username &&
+        user?.dateOfBirth &&
+        user?.gender &&
+        user?.bio &&
+        Array.isArray(user?.interests) &&
+        user.interests.length > 0 &&
+        user?.imageUrl &&
+        Array.isArray(user?.profileImages) &&
+        user.profileImages.length > 0
+    );
+};
+
 export class AuthController {
     async register(req: Request, res: Response) {
         try {
@@ -72,15 +87,58 @@ export class AuthController {
                     { success: false, message: "User Id Not found" }
                 );
             }
-            const parsedData = UpdateUserDTO.safeParse(req.body);
+            const requestBody = { ...req.body } as Record<string, unknown>;
+
+            if (typeof requestBody.interests === "string") {
+                const interests = requestBody.interests
+                    .split(",")
+                    .map((interest) => interest.trim())
+                    .filter(Boolean);
+                requestBody.interests = interests;
+            }
+
+            const parsedData = UpdateUserDTO.safeParse(requestBody);
             if (!parsedData.success) {
                 return res.status(400).json(
                     { success: false, message: z.prettifyError(parsedData.error) }
                 ); // z.prettifyError - better error messages (zod)
             }
-            if (req.file) {
-                parsedData.data.imageUrl = `/uploads/${req.file.filename}`;
+
+            const files = req.files as
+                | { [fieldname: string]: Express.Multer.File[] }
+                | undefined;
+
+            const profileImageFile = files?.image?.[0];
+            if (profileImageFile) {
+                parsedData.data.imageUrl = `/uploads/${profileImageFile.filename}`;
             }
+
+            const galleryFiles = files?.profileImages ?? [];
+            if (galleryFiles.length > 0) {
+                parsedData.data.profileImages = galleryFiles.map(
+                    (file) => `/uploads/${file.filename}`
+                );
+            }
+
+            const existingUser = await userService.getUserById(userId);
+            const mergedUser = {
+                ...existingUser,
+                ...parsedData.data,
+                interests: parsedData.data.interests ?? existingUser.interests,
+                profileImages: parsedData.data.profileImages ?? existingUser.profileImages,
+                imageUrl: parsedData.data.imageUrl ?? existingUser.imageUrl,
+            };
+
+            const onboardingCompleted = isOnboardingComplete(mergedUser);
+            if (!onboardingCompleted) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Complete profile setup with username, DOB, gender, interests, bio, profile picture, and at least one gallery image.",
+                });
+            }
+
+            parsedData.data.onboardingCompleted = true;
+
             const updatedUser = await userService.updateUser(userId, parsedData.data);
             return res.status(200).json(
                 { success: true, data: updatedUser, message: "User profile updated successfully" }

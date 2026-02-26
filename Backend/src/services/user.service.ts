@@ -63,14 +63,14 @@ export class UserService {
         if (!user) {
             throw new HttpError(404, "User not found");
         }
-        if(user.email !== data.email){
-            const emailExists = await userRepository.getUserByEmail(data.email!);
+        if (data.email && user.email !== data.email) {
+            const emailExists = await userRepository.getUserByEmail(data.email);
             if(emailExists){
                 throw new HttpError(403, "Email already in use");
             }
         }
-        if(user.username !== data.username){
-            const usernameExists = await userRepository.getUserByUsername(data.username!);
+        if (data.username && user.username !== data.username) {
+            const usernameExists = await userRepository.getUserByUsername(data.username);
             if(usernameExists){
                 throw new HttpError(403, "Username already in use");
             }
