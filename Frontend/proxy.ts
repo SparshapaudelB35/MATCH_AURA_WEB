@@ -3,7 +3,22 @@ import { getUserData, getAuthToken } from "./lib/cookie";
 
 const publicPaths = ["/login", "/register", "/forgot-password"];
 const adminPaths = ["/admin"];
-const protectedPaths = ["/auth/dashboard"]; // explicitly protected
+const protectedPaths = ["/auth"];
+
+const isOnboardingComplete = (user: any) => {
+  return Boolean(
+    user?.onboardingCompleted &&
+    user?.username &&
+    user?.dateOfBirth &&
+    user?.gender &&
+    user?.bio &&
+    Array.isArray(user?.interests) &&
+    user.interests.length > 0 &&
+    user?.imageUrl &&
+    Array.isArray(user?.profileImages) &&
+    user.profileImages.length > 0
+  );
+};
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -23,16 +38,31 @@ export async function proxy(req: NextRequest) {
 
   // 2. Logged-in user accessing public paths
   if (user && isPublicPath) {
-    const target = user.role === "admin" ? "/admin/dashboard" : "/auth/dashboard";
+    const completed = isOnboardingComplete(user);
+    const target = user.role === "admin"
+      ? "/admin/dashboard"
+      : completed
+        ? "/auth/dashboard"
+        : "/auth/profile";
     return NextResponse.redirect(new URL(target, req.url));
   }
 
-  // 3. Admins should land on the admin dashboard instead of user dashboard
+  // 3. Admins should not access user routes
   if (user && isProtectedPath && user.role === "admin") {
     return NextResponse.redirect(new URL("/admin/dashboard", req.url));
   }
 
-  // 4. Non-admin user trying to access admin routes
+  // 4. Non-admin users must complete onboarding before dashboard
+  if (user && user.role !== "admin" && !isOnboardingComplete(user) && pathname.startsWith("/auth/dashboard")) {
+    return NextResponse.redirect(new URL("/auth/profile", req.url));
+  }
+
+  // 5. Onboarded users should not stay on onboarding page
+  if (user && user.role !== "admin" && isOnboardingComplete(user) && pathname.startsWith("/auth/profile")) {
+    return NextResponse.redirect(new URL("/auth/dashboard", req.url));
+  }
+
+  // 6. Non-admin user trying to access admin routes
   if (user && isAdminPath && user.role !== "admin") {
     return NextResponse.redirect(new URL("/", req.url));
   }
@@ -45,6 +75,6 @@ export const config = {
     "/admin/:path*",
     "/login",
     "/register",
-    "/auth/dashboard",
+    "/auth/:path*",
   ],
 };
