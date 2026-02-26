@@ -87,7 +87,24 @@ export class AuthController {
                     { success: false, message: "User Id Not found" }
                 );
             }
+            const existingUser = await userService.getUserById(userId);
             const requestBody = { ...req.body } as Record<string, unknown>;
+
+            let retainedProfileImages: string[] = existingUser.profileImages ?? [];
+            if (typeof requestBody.retainedProfileImages === "string") {
+                try {
+                    const parsedRetained = JSON.parse(requestBody.retainedProfileImages);
+                    if (Array.isArray(parsedRetained)) {
+                        retainedProfileImages = parsedRetained.filter((item) => typeof item === "string");
+                    }
+                } catch {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Invalid retainedProfileImages payload.",
+                    });
+                }
+            }
+            delete requestBody.retainedProfileImages;
 
             if (typeof requestBody.interests === "string") {
                 const interests = requestBody.interests
@@ -114,13 +131,18 @@ export class AuthController {
             }
 
             const galleryFiles = files?.profileImages ?? [];
-            if (galleryFiles.length > 0) {
-                parsedData.data.profileImages = galleryFiles.map(
-                    (file) => `/uploads/${file.filename}`
-                );
+            const uploadedGalleryImages = galleryFiles.map(
+                (file) => `/uploads/${file.filename}`
+            );
+            const mergedProfileImages = [...retainedProfileImages, ...uploadedGalleryImages];
+            if (mergedProfileImages.length > 6) {
+                return res.status(400).json({
+                    success: false,
+                    message: "You can keep up to 6 gallery images.",
+                });
             }
+            parsedData.data.profileImages = mergedProfileImages;
 
-            const existingUser = await userService.getUserById(userId);
             const mergedUser = {
                 ...existingUser,
                 ...parsedData.data,
