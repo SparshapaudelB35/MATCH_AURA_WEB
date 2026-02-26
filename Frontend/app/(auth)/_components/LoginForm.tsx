@@ -8,6 +8,21 @@ import { useRouter } from "next/navigation";
 import { LoginData, loginSchema } from "../schema";
 import { handleLogin } from "@/lib/actions/auth-action";
 
+const isOnboardingComplete = (user: any) => {
+    return Boolean(
+        user?.onboardingCompleted &&
+        user?.username &&
+        user?.dateOfBirth &&
+        user?.gender &&
+        user?.bio &&
+        Array.isArray(user?.interests) &&
+        user.interests.length > 0 &&
+        user?.imageUrl &&
+        Array.isArray(user?.profileImages) &&
+        user.profileImages.length > 0
+    );
+};
+
 export default function LoginForm() {
     const router = useRouter();
     const [pending, startTransition] = useTransition();
@@ -32,7 +47,12 @@ export default function LoginForm() {
             // handle redirect (optional)
             const isAdmin = res.data?.role === "admin";
             startTransition(() => {
-                router.push(isAdmin ? "/admin/dashboard" : "/auth/dashboard");
+                if (isAdmin) {
+                    router.push("/admin/dashboard");
+                    return;
+                }
+                const needsProfileSetup = !isOnboardingComplete(res.data);
+                router.push(needsProfileSetup ? "/auth/profile" : "/auth/dashboard");
             });
         } catch (err: Error | any) {
             setError(err.message || "Login failed");
