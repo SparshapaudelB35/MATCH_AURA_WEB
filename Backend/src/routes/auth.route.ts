@@ -10,6 +10,8 @@ router.post("/register", authController.register)
 router.post("/login", authController.login)
 
 router.get("/whoami", authorizedMiddleware, authController.getProfile);
+router.get("/discover", authorizedMiddleware, authController.getDiscoverUsers);
+router.post("/swipe", authorizedMiddleware, authController.swipeUser);
 
 router.put(
     "/update-profile",

@@ -58,6 +58,21 @@ export class UserService {
         return user;
     }
 
+    async getDiscoverUsers(userId: string, targetGender?: string) {
+        return await userRepository.getDiscoverUsers(userId, targetGender);
+    }
+
+    async recordSwipe(userId: string, targetUserId: string, action: "like" | "dislike") {
+        if (userId === targetUserId) {
+            throw new HttpError(400, "You cannot swipe your own profile");
+        }
+        const targetUser = await userRepository.getUserById(targetUserId);
+        if (!targetUser) {
+            throw new HttpError(404, "Target user not found");
+        }
+        await userRepository.recordSwipe(userId, targetUserId, action);
+    }
+
     async updateUser(userId: string, data: UpdateUserDTO) {
         const user = await userRepository.getUserById(userId);
         if (!user) {

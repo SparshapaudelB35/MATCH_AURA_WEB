@@ -15,6 +15,9 @@ export const UserSchema = z.object({
     imageUrl: z.string().optional(),
     profileImages: z.array(z.string()).optional(),
     onboardingCompleted: z.boolean().default(false),
+    likedUsers: z.array(z.string()).optional(),
+    dislikedUsers: z.array(z.string()).optional(),
+    matchedUsers: z.array(z.string()).optional(),
 });
 
 export type UserType = z.infer<typeof UserSchema>;

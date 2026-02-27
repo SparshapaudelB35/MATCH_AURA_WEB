@@ -22,6 +22,9 @@ const UserSchema: Schema = new Schema<UserType>(
         imageUrl: { type: String , required: false},
         profileImages: [{ type: String }],
         onboardingCompleted: { type: Boolean, default: false },
+        likedUsers: [{ type: String }],
+        dislikedUsers: [{ type: String }],
+        matchedUsers: [{ type: String }],
     },
     {
         timestamps: true, // auto createdAt and updatedAt

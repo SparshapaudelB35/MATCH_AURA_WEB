@@ -78,7 +78,67 @@ export class AuthController {
             );
         }
     }
-    
+
+    async getDiscoverUsers(req: Request, res: Response) {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                return res.status(400).json(
+                    { success: false, message: "User Id Not found" }
+                );
+            }
+
+            const targetGender =
+                typeof req.query.targetGender === "string" ? req.query.targetGender : undefined;
+
+            const users = await userService.getDiscoverUsers(userId, targetGender);
+            return res.status(200).json(
+                { success: true, data: users, message: "Discover users fetched successfully" }
+            );
+        } catch (error: Error | any) {
+            return res.status(error.statusCode || 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
+    async swipeUser(req: Request, res: Response) {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                return res.status(400).json(
+                    { success: false, message: "User Id Not found" }
+                );
+            }
+
+            const payloadSchema = z.object({
+                targetUserId: z.string().min(1),
+                action: z.enum(["like", "dislike"]),
+            });
+            const parsedData = payloadSchema.safeParse(req.body);
+            if (!parsedData.success) {
+                return res.status(400).json(
+                    { success: false, message: z.prettifyError(parsedData.error) }
+                );
+            }
+
+            await userService.recordSwipe(
+                String(userId),
+                parsedData.data.targetUserId,
+                parsedData.data.action
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: `User ${parsedData.data.action}d successfully`,
+            });
+        } catch (error: Error | any) {
+            return res.status(error.statusCode || 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
     async updateProfile(req: Request, res: Response) {
         try {
             const userId = req.user?._id;

@@ -7,6 +7,8 @@ export interface IUserRepository {
     createUser(userData: Partial<IUser>): Promise<IUser>;
     getUserById(id: string): Promise<IUser | null>;
     getAllUsers(): Promise<IUser[]>;
+    getDiscoverUsers(currentUserId: string, targetGender?: string): Promise<IUser[]>;
+    recordSwipe(userId: string, targetUserId: string, action: "like" | "dislike"): Promise<void>;
     updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null>;
     deleteUser(id: string): Promise<boolean>;
 }
@@ -33,6 +35,46 @@ export class UserRepository implements IUserRepository {
     async getAllUsers(): Promise<IUser[]> {
         const users = await UserModel.find();
         return users;
+    }
+    async getDiscoverUsers(currentUserId: string, targetGender?: string): Promise<IUser[]> {
+        const currentUser = await UserModel.findById(currentUserId, {
+            likedUsers: 1,
+            dislikedUsers: 1,
+        });
+        const excludedIds = [
+            currentUserId,
+            ...((currentUser?.likedUsers as string[] | undefined) || []),
+            ...((currentUser?.dislikedUsers as string[] | undefined) || []),
+        ];
+
+        const query: Record<string, unknown> = {
+            _id: { $nin: excludedIds },
+            role: "user",
+            onboardingCompleted: true,
+        };
+        if (targetGender) {
+            query.gender = { $regex: `^${targetGender}$`, $options: "i" };
+        }
+
+        const users = await UserModel.find(
+            query,
+            { password: 0 }
+        ).sort({ updatedAt: -1 });
+        return users;
+    }
+    async recordSwipe(userId: string, targetUserId: string, action: "like" | "dislike"): Promise<void> {
+        const update =
+            action === "like"
+                ? {
+                    $addToSet: { likedUsers: targetUserId },
+                    $pull: { dislikedUsers: targetUserId },
+                }
+                : {
+                    $addToSet: { dislikedUsers: targetUserId },
+                    $pull: { likedUsers: targetUserId },
+                };
+
+        await UserModel.updateOne({ _id: userId }, update);
     }
     async updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
         // UserModel.updateOne({ _id: id }, { $set: updateData });
