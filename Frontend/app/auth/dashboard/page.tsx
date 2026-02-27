@@ -61,6 +61,7 @@ export default async function DashboardPage() {
         users={users}
         apiBaseUrl={API_BASE_URL}
         me={{
+          _id: me._id,
           name: me.username,
           firstName: me.firstName,
           lastName: me.lastName,
