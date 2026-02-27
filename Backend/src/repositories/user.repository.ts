@@ -6,6 +6,7 @@ export interface IUserRepository {
     // 5 common database queries for entity
     createUser(userData: Partial<IUser>): Promise<IUser>;
     getUserById(id: string): Promise<IUser | null>;
+    getUsersByIds(ids: string[]): Promise<IUser[]>;
     getAllUsers(): Promise<IUser[]>;
     getDiscoverUsers(currentUserId: string, targetGender?: string): Promise<IUser[]>;
     recordSwipe(userId: string, targetUserId: string, action: "like" | "dislike"): Promise<void>;
@@ -35,6 +36,10 @@ export class UserRepository implements IUserRepository {
     async getAllUsers(): Promise<IUser[]> {
         const users = await UserModel.find();
         return users;
+    }
+    async getUsersByIds(ids: string[]): Promise<IUser[]> {
+        if (ids.length === 0) return [];
+        return await UserModel.find({ _id: { $in: ids } }, { password: 0 }).sort({ updatedAt: -1 });
     }
     async getDiscoverUsers(currentUserId: string, targetGender?: string): Promise<IUser[]> {
         const currentUser = await UserModel.findById(currentUserId, {

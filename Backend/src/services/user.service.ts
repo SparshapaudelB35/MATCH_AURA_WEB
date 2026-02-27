@@ -4,6 +4,7 @@ import  bcryptjs from "bcryptjs"
 import { HttpError } from "../errors/http-error";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
+import { MessageModel } from "../models/message.model";
 
 let userRepository = new UserRepository();
 
@@ -71,6 +72,76 @@ export class UserService {
             throw new HttpError(404, "Target user not found");
         }
         await userRepository.recordSwipe(userId, targetUserId, action);
+
+        const user = await userRepository.getUserById(userId);
+        const freshTarget = await userRepository.getUserById(targetUserId);
+        if (!user || !freshTarget) return;
+
+        const userMatches = new Set(user.matchedUsers || []);
+        const targetMatches = new Set(freshTarget.matchedUsers || []);
+
+        if (action === "like") {
+            const isMutualLike = (freshTarget.likedUsers || []).includes(userId);
+            if (isMutualLike) {
+                userMatches.add(targetUserId);
+                targetMatches.add(userId);
+                await userRepository.updateUser(userId, { matchedUsers: Array.from(userMatches) });
+                await userRepository.updateUser(targetUserId, { matchedUsers: Array.from(targetMatches) });
+            }
+        } else {
+            // Dislike acts as unmatch if they were previously matched
+            userMatches.delete(targetUserId);
+            targetMatches.delete(userId);
+            await userRepository.updateUser(userId, { matchedUsers: Array.from(userMatches) });
+            await userRepository.updateUser(targetUserId, { matchedUsers: Array.from(targetMatches) });
+        }
+    }
+
+    async getMatches(userId: string) {
+        const user = await userRepository.getUserById(userId);
+        if (!user) throw new HttpError(404, "User not found");
+        const matchIds = (user.matchedUsers || []).filter(Boolean);
+        return await userRepository.getUsersByIds(matchIds);
+    }
+
+    async getMessages(userId: string, otherUserId: string) {
+        const user = await userRepository.getUserById(userId);
+        if (!user) throw new HttpError(404, "User not found");
+        const canChat = (user.matchedUsers || []).includes(otherUserId);
+        if (!canChat) {
+            throw new HttpError(403, "You can only message matched users");
+        }
+
+        const messages = await MessageModel.find({
+            $or: [
+                { senderId: userId, receiverId: otherUserId },
+                { senderId: otherUserId, receiverId: userId },
+            ],
+        }).sort({ createdAt: 1 });
+
+        return messages;
+    }
+
+    async sendMessage(userId: string, otherUserId: string, content: string) {
+        const user = await userRepository.getUserById(userId);
+        if (!user) throw new HttpError(404, "User not found");
+        const canChat = (user.matchedUsers || []).includes(otherUserId);
+        if (!canChat) {
+            throw new HttpError(403, "You can only message matched users");
+        }
+
+        const receiver = await userRepository.getUserById(otherUserId);
+        if (!receiver) {
+            throw new HttpError(404, "Receiver not found");
+        }
+
+        const message = await MessageModel.create({
+            senderId: userId,
+            receiverId: otherUserId,
+            content,
+        });
+
+        return message;
     }
 
     async updateUser(userId: string, data: UpdateUserDTO) {

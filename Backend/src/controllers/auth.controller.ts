@@ -102,6 +102,100 @@ export class AuthController {
         }
     }
 
+    async getMatches(req: Request, res: Response) {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                return res.status(400).json(
+                    { success: false, message: "User Id Not found" }
+                );
+            }
+
+            const matches = await userService.getMatches(String(userId));
+            return res.status(200).json({
+                success: true,
+                data: matches,
+                message: "Matches fetched successfully",
+            });
+        } catch (error: Error | any) {
+            return res.status(error.statusCode || 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
+    async getMessages(req: Request, res: Response) {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                return res.status(400).json(
+                    { success: false, message: "User Id Not found" }
+                );
+            }
+            const otherUserIdParam = req.params.userId;
+            const otherUserId = Array.isArray(otherUserIdParam) ? otherUserIdParam[0] : otherUserIdParam;
+            if (!otherUserId) {
+                return res.status(400).json(
+                    { success: false, message: "Other user id is required" }
+                );
+            }
+
+            const messages = await userService.getMessages(String(userId), otherUserId);
+            return res.status(200).json({
+                success: true,
+                data: messages,
+                message: "Messages fetched successfully",
+            });
+        } catch (error: Error | any) {
+            return res.status(error.statusCode || 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
+    async sendMessage(req: Request, res: Response) {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                return res.status(400).json(
+                    { success: false, message: "User Id Not found" }
+                );
+            }
+            const otherUserIdParam = req.params.userId;
+            const otherUserId = Array.isArray(otherUserIdParam) ? otherUserIdParam[0] : otherUserIdParam;
+            if (!otherUserId) {
+                return res.status(400).json(
+                    { success: false, message: "Other user id is required" }
+                );
+            }
+
+            const payloadSchema = z.object({
+                content: z.string().trim().min(1).max(1000),
+            });
+            const parsedData = payloadSchema.safeParse(req.body);
+            if (!parsedData.success) {
+                return res.status(400).json(
+                    { success: false, message: z.prettifyError(parsedData.error) }
+                );
+            }
+
+            const message = await userService.sendMessage(
+                String(userId),
+                otherUserId,
+                parsedData.data.content
+            );
+            return res.status(201).json({
+                success: true,
+                data: message,
+                message: "Message sent successfully",
+            });
+        } catch (error: Error | any) {
+            return res.status(error.statusCode || 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
     async swipeUser(req: Request, res: Response) {
         try {
             const userId = req.user?._id;

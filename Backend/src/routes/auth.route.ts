@@ -11,6 +11,9 @@ router.post("/login", authController.login)
 
 router.get("/whoami", authorizedMiddleware, authController.getProfile);
 router.get("/discover", authorizedMiddleware, authController.getDiscoverUsers);
+router.get("/matches", authorizedMiddleware, authController.getMatches);
+router.get("/messages/:userId", authorizedMiddleware, authController.getMessages);
+router.post("/messages/:userId", authorizedMiddleware, authController.sendMessage);
 router.post("/swipe", authorizedMiddleware, authController.swipeUser);
 
 router.put(
