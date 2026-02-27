@@ -264,6 +264,34 @@ export default function UpdateUserForm({ user }: { user: UserShape }) {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
+                            <label className="mb-1 block text-sm font-semibold text-zinc-900">First Name</label>
+                            <input
+                                {...register("firstName")}
+                                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-500 focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                            />
+                            {errors.firstName?.message && <p className="mt-1 text-sm text-red-700">{errors.firstName.message}</p>}
+                        </div>
+
+                        <div>
+                            <label className="mb-1 block text-sm font-semibold text-zinc-900">Last Name</label>
+                            <input
+                                {...register("lastName")}
+                                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-500 focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                            />
+                            {errors.lastName?.message && <p className="mt-1 text-sm text-red-700">{errors.lastName.message}</p>}
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label className="mb-1 block text-sm font-semibold text-zinc-900">Email</label>
+                            <input
+                                type="email"
+                                {...register("email")}
+                                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-500 focus:border-rose-400 focus:ring-4 focus:ring-rose-100"
+                            />
+                            {errors.email?.message && <p className="mt-1 text-sm text-red-700">{errors.email.message}</p>}
+                        </div>
+
+                        <div>
                             <label className="mb-1 block text-sm font-semibold text-zinc-900">Username</label>
                             <input
                                 {...register("username")}

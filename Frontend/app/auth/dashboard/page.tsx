@@ -1,41 +1,79 @@
-"use client";
+﻿import { handleDiscoverUsers, handleWhoAmI } from "@/lib/actions/auth-action";
+import { notFound, redirect } from "next/navigation";
+import DiscoverDeck from "../_components/DiscoverDeck";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
-  const router = useRouter();
+type DiscoverUser = {
+  _id: string;
+  username?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  bio?: string;
+  interests?: string[];
+  imageUrl?: string;
+  profileImages?: string[];
+};
 
-  const handleSignOut = () => {
-    // Delete cookies
-    document.cookie.split(";").forEach((cookie) => {
-      const name = cookie.split("=")[0].trim();
-      document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    });
+const isOnboardingComplete = (user: any) => {
+  return Boolean(
+    user?.onboardingCompleted &&
+      user?.username &&
+      user?.dateOfBirth &&
+      user?.gender &&
+      user?.bio &&
+      Array.isArray(user?.interests) &&
+      user.interests.length > 0 &&
+      user?.imageUrl &&
+      Array.isArray(user?.profileImages) &&
+      user.profileImages.length > 0
+  );
+};
 
-    // Redirect to login page
-    router.push("/login");
-  };
+const getOppositeGender = (gender?: string) => {
+  const normalized = String(gender || "").toLowerCase();
+  if (normalized === "male") return "female";
+  if (normalized === "female") return "male";
+  return undefined;
+};
+
+export default async function DashboardPage() {
+  const profileResult = await handleWhoAmI();
+
+  if (!profileResult.success || !profileResult.data) {
+    notFound();
+  }
+
+  const me = profileResult.data;
+
+  if (me.role !== "admin" && !isOnboardingComplete(me)) {
+    redirect("/auth/profile");
+  }
+
+  const targetGender = getOppositeGender(me.gender);
+  const discoverResult = await handleDiscoverUsers(targetGender);
+  const users: DiscoverUser[] = discoverResult.success ? discoverResult.data : [];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-900">
-      <div className="w-full max-w-3xl p-12 space-y-8 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-zinc-100 dark:border-zinc-700 text-center">
-        <div className="flex justify-center">
-          <Image src="/images/logo.png" alt="Logo" width={96} height={96} />
-        </div>
-
-        <h1 className="text-4xl font-extrabold">Welcome to your Dashboard</h1>
-        <p className="text-zinc-500">This is a dummy page that you can use as a landing page after sign in.</p>
-
-        <div className="space-x-4">
-          <button
-            onClick={handleSignOut}
-            className="inline-block rounded-lg px-6 py-3 bg-rose-500 text-white font-semibold hover:opacity-90"
-          >
-            Sign out
-          </button>
-        </div>
-      </div>
-    </div>
+    <main className="relative min-h-screen bg-white">
+      <DiscoverDeck
+        users={users}
+        apiBaseUrl={API_BASE_URL}
+        me={{
+          name: me.username,
+          firstName: me.firstName,
+          lastName: me.lastName,
+          email: me.email,
+          imageUrl: me.imageUrl,
+          username: me.username,
+          gender: me.gender,
+          dateOfBirth: me.dateOfBirth,
+          bio: me.bio,
+          interests: me.interests,
+          profileImages: me.profileImages,
+        }}
+      />
+    </main>
   );
 }
