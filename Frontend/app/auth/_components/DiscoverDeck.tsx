@@ -445,8 +445,8 @@ export default function TinderStyleDashboard({
               type="button"
               onClick={() => setViewMode("discover")}
               className={`mt-3 w-full rounded-2xl border px-3 py-2 text-left text-sm font-semibold transition ${viewMode === "discover"
-                  ? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-800"
-                  : "border-zinc-200 bg-white text-zinc-700"
+                ? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-800"
+                : "border-zinc-200 bg-white text-zinc-700"
                 }`}
             >
               Discover Users
@@ -456,8 +456,8 @@ export default function TinderStyleDashboard({
               type="button"
               onClick={() => setViewMode("messages")}
               className={`mt-3 w-full rounded-2xl border px-3 py-2 text-left text-sm font-semibold transition ${viewMode === "messages"
-                  ? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-800"
-                  : "border-zinc-200 bg-white text-zinc-700"
+                ? "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-800"
+                : "border-zinc-200 bg-white text-zinc-700"
                 }`}
             >
               Messages
@@ -475,216 +475,216 @@ export default function TinderStyleDashboard({
           <main className="h-full overflow-hidden rounded-3xl border-2 border-fuchsia-500/40 bg-white p-4">
             {viewMode === "messages" ? (
               <div className="h-full w-full rounded-3xl border border-zinc-200 bg-white/80 p-4 shadow-xl backdrop-blur sm:p-6">
-  <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
-    {/* LEFT: Matches */}
-    <aside className="flex h-full flex-col rounded-2xl border border-zinc-200 bg-zinc-50/60 p-3">
-      <div className="mb-3 flex items-center justify-between px-1">
-        <p className="text-sm font-extrabold tracking-tight text-zinc-900">Matches</p>
-        <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-700">
-          {matches.length}
-        </span>
-      </div>
-
-      {/* Optional search (only UI) */}
-      <div className="mb-3 px-1">
-        <input
-          placeholder="Search matches..."
-          className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900
-            placeholder:text-zinc-400 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-100"
-        />
-      </div>
-
-      <div className="flex-1 overflow-y-auto pr-1">
-        {matches.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-4 text-sm text-zinc-600">
-            No matches yet.
-            <div className="mt-1 text-xs text-zinc-500">When you match, chats will show here.</div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {matches.map((match) => {
-              const active = selectedMatchId === match._id;
-
-              return (
-                <button
-                  key={match._id}
-                  type="button"
-                  onClick={() => setSelectedMatchId(match._id)}
-                  className={[
-                    "group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition",
-                    active
-                      ? "border-fuchsia-200 bg-gradient-to-r from-fuchsia-50 to-rose-50 ring-2 ring-fuchsia-200"
-                      : "border-zinc-200 bg-white hover:border-rose-200 hover:bg-rose-50/40",
-                  ].join(" ")}
-                >
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-zinc-200">
-                    {match.imageUrl ? (
-                      <Image
-                        src={`${apiBaseUrl}${match.imageUrl}`}
-                        alt={match.username || "Match"}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs font-bold text-zinc-600">
-                        {(match.username || "U").slice(0, 1).toUpperCase()}
-                      </div>
-                    )}
-
-                    {/* Online dot (UI placeholder) */}
-                    <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-extrabold text-zinc-900">
-                        {match.username || "Unknown"}
+                <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
+                  {/* LEFT: Matches */}
+                  <aside className="flex h-full flex-col rounded-2xl border border-zinc-200 bg-zinc-50/60 p-3">
+                    <div className="mb-3 flex items-center justify-between px-1">
+                      <p className="text-sm font-extrabold tracking-tight text-zinc-900">Matches</p>
+                      <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-semibold text-zinc-700">
+                        {matches.length}
                       </span>
-                      {/* Optional time placeholder */}
-                      <span className="shrink-0 text-[11px] text-zinc-500"> </span>
                     </div>
-                    {/* Optional last message placeholder */}
-                    <p className="truncate text-xs text-zinc-600">
-                      Tap to open chat
-                    </p>
-                  </div>
 
-                  <span
-                    className={[
-                      "ml-1 h-2 w-2 rounded-full",
-                      active ? "bg-fuchsia-500" : "bg-zinc-300 group-hover:bg-rose-400",
-                    ].join(" ")}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </aside>
-
-    {/* RIGHT: Chat */}
-    <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white">
-      {/* Chat Header */}
-      <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
-        {selectedMatch ? (
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-2xl bg-zinc-200">
-              {selectedMatch.imageUrl ? (
-                <Image
-                  src={`${apiBaseUrl}${selectedMatch.imageUrl}`}
-                  alt={selectedMatch.username || "User"}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs font-bold text-zinc-600">
-                  {(selectedMatch.username || "U").slice(0, 1).toUpperCase()}
-                </div>
-              )}
-            </div>
-
-            <div className="min-w-0">
-              <p className="truncate text-sm font-extrabold text-zinc-900">
-                {selectedMatch.username || "User"}
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-xs font-semibold text-zinc-600">Active</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <p className="text-sm font-extrabold text-zinc-900">Select a match</p>
-            <p className="text-xs text-zinc-500">Choose someone from the left to start chatting.</p>
-          </div>
-        )}
-
-        {/* Optional actions (UI only) */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
-            disabled={!selectedMatch}
-          >
-            View profile
-          </button>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-rose-50/30 via-white to-white p-4">
-        {messagesLoading ? (
-          <p className="text-sm text-zinc-500">Loading...</p>
-        ) : messages.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-5 text-sm text-zinc-600">
-            No messages yet.
-            <div className="mt-1 text-xs text-zinc-500">Send a message to start the conversation ✨</div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {messages.map((message) => {
-              const isMine = message.senderId === myProfile._id;
-
-              return (
-                <div key={message._id} className={isMine ? "flex justify-end" : "flex justify-start"}>
-                  <div
-                    className={[
-                      "max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-sm",
-                      isMine
-                        ? "bg-gradient-to-r from-fuchsia-600 to-rose-600 text-white"
-                        : "bg-white text-zinc-900 ring-1 ring-zinc-200",
-                    ].join(" ")}
-                  >
-                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
-
-                    {/* Optional timestamp slot */}
-                    <div className={isMine ? "mt-1 text-right text-[10px] text-white/80" : "mt-1 text-right text-[10px] text-zinc-500"}>
-                      {/* {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} */}
+                    {/* Optional search (only UI) */}
+                    <div className="mb-3 px-1">
+                      <input
+                        placeholder="Search matches..."
+                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900
+            placeholder:text-zinc-400 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-100"
+                      />
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
 
-      {/* Input Bar */}
-      <div className="border-t border-zinc-200 bg-white p-3">
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <input
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  void sendMessage();
-                }
-              }}
-              disabled={matches.length === 0}
-              placeholder={matches.length === 0 ? "No matches yet" : "Type a message..."}
-              className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400
+                    <div className="flex-1 overflow-y-auto pr-1">
+                      {matches.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-4 text-sm text-zinc-600">
+                          No matches yet.
+                          <div className="mt-1 text-xs text-zinc-500">When you match, chats will show here.</div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {matches.map((match) => {
+                            const active = selectedMatchId === match._id;
+
+                            return (
+                              <button
+                                key={match._id}
+                                type="button"
+                                onClick={() => setSelectedMatchId(match._id)}
+                                className={[
+                                  "group flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition",
+                                  active
+                                    ? "border-fuchsia-200 bg-gradient-to-r from-fuchsia-50 to-rose-50 ring-2 ring-fuchsia-200"
+                                    : "border-zinc-200 bg-white hover:border-rose-200 hover:bg-rose-50/40",
+                                ].join(" ")}
+                              >
+                                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-zinc-200">
+                                  {match.imageUrl ? (
+                                    <Image
+                                      src={`${apiBaseUrl}${match.imageUrl}`}
+                                      alt={match.username || "Match"}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-xs font-bold text-zinc-600">
+                                      {(match.username || "U").slice(0, 1).toUpperCase()}
+                                    </div>
+                                  )}
+
+                                  {/* Online dot (UI placeholder) */}
+                                  <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="truncate text-sm font-extrabold text-zinc-900">
+                                      {match.username || "Unknown"}
+                                    </span>
+                                    {/* Optional time placeholder */}
+                                    <span className="shrink-0 text-[11px] text-zinc-500"> </span>
+                                  </div>
+                                  {/* Optional last message placeholder */}
+                                  <p className="truncate text-xs text-zinc-600">
+                                    Tap to open chat
+                                  </p>
+                                </div>
+
+                                <span
+                                  className={[
+                                    "ml-1 h-2 w-2 rounded-full",
+                                    active ? "bg-fuchsia-500" : "bg-zinc-300 group-hover:bg-rose-400",
+                                  ].join(" ")}
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </aside>
+
+                  {/* RIGHT: Chat */}
+                  <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                    {/* Chat Header */}
+                    <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3">
+                      {selectedMatch ? (
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-2xl bg-zinc-200">
+                            {selectedMatch.imageUrl ? (
+                              <Image
+                                src={`${apiBaseUrl}${selectedMatch.imageUrl}`}
+                                alt={selectedMatch.username || "User"}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs font-bold text-zinc-600">
+                                {(selectedMatch.username || "U").slice(0, 1).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-extrabold text-zinc-900">
+                              {selectedMatch.username || "User"}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                              <span className="text-xs font-semibold text-zinc-600">Active</span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-sm font-extrabold text-zinc-900">Select a match</p>
+                          <p className="text-xs text-zinc-500">Choose someone from the left to start chatting.</p>
+                        </div>
+                      )}
+
+                      {/* Optional actions (UI only) */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                          disabled={!selectedMatch}
+                        >
+                          View profile
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-rose-50/30 via-white to-white p-4">
+                      {messagesLoading ? (
+                        <p className="text-sm text-zinc-500">Loading...</p>
+                      ) : messages.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-5 text-sm text-zinc-600">
+                          No messages yet.
+                          <div className="mt-1 text-xs text-zinc-500">Send a message to start the conversation ✨</div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {messages.map((message) => {
+                            const isMine = message.senderId === myProfile._id;
+
+                            return (
+                              <div key={message._id} className={isMine ? "flex justify-end" : "flex justify-start"}>
+                                <div
+                                  className={[
+                                    "max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+                                    isMine
+                                      ? "bg-gradient-to-r from-fuchsia-600 to-rose-600 text-white"
+                                      : "bg-white text-zinc-900 ring-1 ring-zinc-200",
+                                  ].join(" ")}
+                                >
+                                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
+
+                                  {/* Optional timestamp slot */}
+                                  <div className={isMine ? "mt-1 text-right text-[10px] text-white/80" : "mt-1 text-right text-[10px] text-zinc-500"}>
+                                    {/* {new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} */}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Input Bar */}
+                    <div className="border-t border-zinc-200 bg-white p-3">
+                      <div className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <input
+                            value={messageInput}
+                            onChange={(e) => setMessageInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                void sendMessage();
+                              }
+                            }}
+                            disabled={matches.length === 0}
+                            placeholder={matches.length === 0 ? "No matches yet" : "Type a message..."}
+                            className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400
                 focus:border-rose-400 focus:outline-none focus:ring-4 focus:ring-rose-100 disabled:bg-zinc-50 disabled:text-zinc-500"
-            />
-          </div>
+                          />
+                        </div>
 
-          <button
-            type="button"
-            disabled={!selectedMatchId || !messageInput.trim()}
-            onClick={() => void sendMessage()}
-            className="rounded-2xl bg-gradient-to-r from-rose-600 to-fuchsia-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-rose-200
+                        <button
+                          type="button"
+                          disabled={!selectedMatchId || !messageInput.trim()}
+                          onClick={() => void sendMessage()}
+                          className="rounded-2xl bg-gradient-to-r from-rose-600 to-fuchsia-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-rose-200
               hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Send
-          </button>
-        </div>
-      </div>
-    </section>
-  </div>
-</div>
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
             ) : viewMode === "my-profile" ? (
               <form
                 onSubmit={submitMyProfileUpdate}
