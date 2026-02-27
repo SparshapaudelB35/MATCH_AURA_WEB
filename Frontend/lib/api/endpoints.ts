@@ -3,6 +3,8 @@ export const API = {
     LOGIN: '/api/auth/login',
     REGISTER: '/api/auth/register',
     WHOAMI: '/api/auth/whoami',
+    DISCOVER: '/api/auth/discover',
+    SWIPE: '/api/auth/swipe',
     UPDATEPROFILE: '/api/auth/update-profile',
   },
   ADMIN: {

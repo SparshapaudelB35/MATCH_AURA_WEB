@@ -32,6 +32,21 @@ export const fetchWhoAmI = async () => {
     }
 }
 
+export const fetchDiscoverUsers = async (targetGender?: string) => {
+  try {
+        const response = await axios.get(API.AUTH.DISCOVER, {
+            params: targetGender ? { targetGender } : undefined,
+        })
+        return response.data
+    } catch (error: Error | any) {
+        throw new Error(
+            error.response?.data?.message
+            || error.message
+            || 'Fetching discover users failed'
+        )
+    }
+}
+
 export const updateProfile = async (profileData: any) => {
   try {
     const response = await axios.put(

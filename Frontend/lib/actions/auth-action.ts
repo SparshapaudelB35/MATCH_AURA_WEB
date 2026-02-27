@@ -1,5 +1,5 @@
 "use server";
-import { fetchWhoAmI, loginUser, registerUser, updateProfile } from "@/lib/api/auth"
+import { fetchDiscoverUsers, fetchWhoAmI, loginUser, registerUser, updateProfile } from "@/lib/api/auth"
 import { LoginData, RegisterData } from "@/app/(auth)/schema"
 import { setAuthToken, setUserData, clearAuthCookies } from "../cookie"
 import { redirect } from "next/navigation";
@@ -86,6 +86,30 @@ export const handleWhoAmI = async () => {
             success:false,
             message:error.message || 'WhoAmI action failed'
         }
+    }
+}
+
+export const handleDiscoverUsers = async (targetGender?: string) => {
+    try {
+        const result = await fetchDiscoverUsers(targetGender);
+        if (result.success) {
+            return {
+                success: true,
+                message: "Discover users fetched successfully",
+                data: result.data
+            };
+        }
+        return {
+            success: false,
+            message: result.message || "Failed to fetch discover users",
+            data: []
+        };
+    } catch (error: Error | any) {
+        return {
+            success: false,
+            message: error.message || "Discover users action failed",
+            data: []
+        };
     }
 }
 
