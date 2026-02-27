@@ -5,7 +5,10 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/web
 export const updateUserSchema = z.object({
     firstName: z.string().min(2, { message: "Minimum 2 characters" }).optional().or(z.literal("")),
     lastName: z.string().min(2, { message: "Minimum 2 characters" }).optional().or(z.literal("")),
-    email: z.string().optional().or(z.literal("")),
+    email: z.union([
+        z.literal(""),
+        z.string().email({ message: "Invalid email address" })
+    ]),
     username: z.string().min(3, { message: "Minimum 3 characters" }),
     dateOfBirth: z.string().min(1, { message: "Date of birth is required" }),
     gender: z.enum(["male", "female", "other"]),
