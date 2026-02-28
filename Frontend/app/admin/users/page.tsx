@@ -29,7 +29,14 @@ export default function UsersPage() {
       const res = await fetch("/api/admin/users");
       if (!res.ok) throw new Error("Failed to fetch users");
       const json = await res.json();
-      setUsers(json.data || []);
+      const normalizedUsers: User[] = (json.data || [])
+        .filter((user: User) => user.role !== "admin")
+        .sort((a: User, b: User) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime;
+        });
+      setUsers(normalizedUsers);
     } catch (err: any) {
       toast.error(err.message || "Error fetching users");
     } finally {

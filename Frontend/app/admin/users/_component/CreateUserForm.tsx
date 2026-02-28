@@ -54,6 +54,18 @@ export default function CreateUserForm() {
                 formData.append('username', data.username);
                 formData.append('password', data.password);
                 formData.append('confirmPassword', data.confirmPassword);
+                if (data.dateOfBirth) {
+                    formData.append('dateOfBirth', data.dateOfBirth);
+                }
+                if (data.gender) {
+                    formData.append('gender', data.gender);
+                }
+                if (data.interests !== undefined) {
+                    formData.append('interests', data.interests);
+                }
+                if (data.bio !== undefined) {
+                    formData.append('bio', data.bio);
+                }
 
                 if (data.image) {
                     formData.append('image', data.image);
@@ -74,7 +86,6 @@ export default function CreateUserForm() {
         });
 
     };
-    console.log(errors);
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Profile Image Display */}
@@ -184,6 +195,67 @@ export default function CreateUserForm() {
                 />
                 {errors.username?.message && (
                     <p className="text-xs text-red-600">{errors.username.message}</p>
+                )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <label className="text-sm font-medium" htmlFor="dateOfBirth">Date of birth</label>
+                    <input
+                        id="dateOfBirth"
+                        type="date"
+                        className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
+                        {...register("dateOfBirth")}
+                    />
+                    {errors.dateOfBirth?.message && (
+                        <p className="text-xs text-red-600">{errors.dateOfBirth.message}</p>
+                    )}
+                </div>
+                <div className="space-y-1">
+                    <label className="text-sm font-medium" htmlFor="gender">Gender</label>
+                    <select
+                        id="gender"
+                        className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
+                        {...register("gender")}
+                        defaultValue=""
+                    >
+                        <option value="" disabled>Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                    {errors.gender?.message && (
+                        <p className="text-xs text-red-600">{errors.gender.message}</p>
+                    )}
+                </div>
+            </div>
+
+            <div className="space-y-1">
+                <label className="text-sm font-medium" htmlFor="interests">Interests</label>
+                <input
+                    id="interests"
+                    type="text"
+                    className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
+                    {...register("interests")}
+                    placeholder="music, travel, reading"
+                />
+                <p className="text-xs text-zinc-500">Comma separated</p>
+                {errors.interests?.message && (
+                    <p className="text-xs text-red-600">{errors.interests.message}</p>
+                )}
+            </div>
+
+            <div className="space-y-1">
+                <label className="text-sm font-medium" htmlFor="bio">Bio</label>
+                <textarea
+                    id="bio"
+                    rows={4}
+                    className="w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
+                    {...register("bio")}
+                    placeholder="Short bio..."
+                />
+                {errors.bio?.message && (
+                    <p className="text-xs text-red-600">{errors.bio.message}</p>
                 )}
             </div>
             <div className="space-y-1">

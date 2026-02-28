@@ -10,6 +10,10 @@ type UserFormData = {
   lastName?: string;
   email?: string;
   username?: string;
+  dateOfBirth?: string;
+  gender?: "male" | "female" | "other";
+  interests?: string;
+  bio?: string;
   image?: File;
 };
 
@@ -19,6 +23,10 @@ type UserResponse = {
   lastName?: string;
   email?: string;
   username?: string;
+  dateOfBirth?: string;
+  gender?: "male" | "female" | "other";
+  interests?: string[];
+  bio?: string;
   imageUrl?: string;
 };
 
@@ -52,6 +60,10 @@ export default function EditUserPage() {
           lastName: user.lastName || "",
           email: user.email || "",
           username: user.username || "",
+          dateOfBirth: user.dateOfBirth || "",
+          gender: user.gender || "other",
+          interests: (user.interests || []).join(", "),
+          bio: user.bio || "",
         });
         setExistingImage(user.imageUrl ? `${baseUrl}${user.imageUrl}` : null);
       } catch (err: any) {
@@ -90,6 +102,10 @@ export default function EditUserPage() {
         if (data.lastName) formData.append("lastName", data.lastName);
         if (data.email) formData.append("email", data.email);
         if (data.username) formData.append("username", data.username);
+        if (data.dateOfBirth) formData.append("dateOfBirth", data.dateOfBirth);
+        if (data.gender) formData.append("gender", data.gender);
+        if (data.interests !== undefined) formData.append("interests", data.interests);
+        if (data.bio !== undefined) formData.append("bio", data.bio);
         if (data.image) formData.append("image", data.image);
 
         const res = await fetch(`/api/admin/users/${userId}`, {
@@ -225,6 +241,53 @@ export default function EditUserPage() {
           {errors.username?.message && (
             <p className="text-xs text-rose-600">{errors.username.message}</p>
           )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-zinc-800" htmlFor="dateOfBirth">Date of birth</label>
+            <input
+              id="dateOfBirth"
+              type="date"
+              className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-zinc-700"
+              {...register("dateOfBirth")}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-semibold text-zinc-800" htmlFor="gender">Gender</label>
+            <select
+              id="gender"
+              className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus:border-zinc-700"
+              {...register("gender")}
+            >
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-semibold text-zinc-800" htmlFor="interests">Interests</label>
+          <input
+            id="interests"
+            type="text"
+            className="h-11 w-full rounded-md border border-zinc-300 bg-white px-3 text-base text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-zinc-700"
+            placeholder="music, travel, reading"
+            {...register("interests")}
+          />
+          <p className="text-xs text-zinc-500">Comma separated</p>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-semibold text-zinc-800" htmlFor="bio">Bio</label>
+          <textarea
+            id="bio"
+            rows={4}
+            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-zinc-700"
+            {...register("bio")}
+          />
         </div>
 
         <div className="flex items-center gap-3 pt-2">
