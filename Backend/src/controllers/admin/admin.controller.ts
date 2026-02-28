@@ -8,7 +8,14 @@ let adminUserService = new AdminUserService();
 export class AdminUserController {
     async createUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const parsedData = CreateUserDTO.safeParse(req.body); // validate request body
+            const requestBody = { ...req.body } as Record<string, unknown>;
+            if (typeof requestBody.interests === "string") {
+                requestBody.interests = requestBody.interests
+                    .split(",")
+                    .map((interest) => interest.trim())
+                    .filter(Boolean);
+            }
+            const parsedData = CreateUserDTO.safeParse(requestBody); // validate request body
             if (!parsedData.success) { // validation failed
                 return res.status(400).json(
                     { success: false, message: z.prettifyError(parsedData.error) }

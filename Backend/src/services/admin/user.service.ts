@@ -26,7 +26,12 @@ export class AdminUserService {
 
     async getAllUsers(){
         const users = await userRepository.getAllUsers();
-        return users;
+        return users
+            .filter((user) => user.role !== "admin")
+            .sort(
+                (a, b) =>
+                    new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime()
+            );
     }
 
     async deleteUser(id: string){
