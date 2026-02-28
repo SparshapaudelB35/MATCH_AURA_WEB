@@ -1,7 +1,7 @@
 import z from "zod";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 export const UserSchema = z.object({
     email: z.email({ message: "Enter a valid email" }),
@@ -10,6 +10,10 @@ export const UserSchema = z.object({
     firstName: z.string().optional(),
     lastName: z.string().optional(),
     username: z.string().min(3, { message: "Username must be at least 3 characters" }),
+    dateOfBirth: z.string().optional(),
+    gender: z.enum(["male", "female", "other"]).optional(),
+    interests: z.string().optional(),
+    bio: z.string().max(500, { message: "Bio must be at most 500 characters" }).optional(),
     image: z
         .instanceof(File)
         .optional()
