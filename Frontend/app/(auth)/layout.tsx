@@ -14,6 +14,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 title: "Create your profile",
                 subtitle: "Let your aura lead the way to love."
             }
+            : pathname === "/forgot-password"
+                ? {
+                    title: "Recover your account",
+                    subtitle: "Get a secure reset link in your inbox."
+                }
+                : pathname === "/reset-password"
+                    ? {
+                        title: "Set a fresh password",
+                        subtitle: "You are one step away from getting back in."
+                    }
             : null;
 
     return (

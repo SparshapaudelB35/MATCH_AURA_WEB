@@ -18,6 +18,8 @@ export const UserSchema = z.object({
     likedUsers: z.array(z.string()).optional(),
     dislikedUsers: z.array(z.string()).optional(),
     matchedUsers: z.array(z.string()).optional(),
+    resetPasswordToken: z.string().optional(),
+    resetPasswordExpires: z.date().optional(),
 });
 
 export type UserType = z.infer<typeof UserSchema>;

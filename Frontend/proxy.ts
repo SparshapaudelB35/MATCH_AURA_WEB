@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserData, getAuthToken } from "./lib/cookie";
 
-const publicPaths = ["/login", "/register", "/forgot-password"];
+const publicPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
 const adminPaths = ["/admin"];
 const protectedPaths = ["/auth"];
 
@@ -75,6 +75,8 @@ export const config = {
     "/admin/:path*",
     "/login",
     "/register",
+    "/forgot-password",
+    "/reset-password",
     "/auth/:path*",
   ],
 };

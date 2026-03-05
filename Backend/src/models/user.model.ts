@@ -25,6 +25,8 @@ const UserSchema: Schema = new Schema<UserType>(
         likedUsers: [{ type: String }],
         dislikedUsers: [{ type: String }],
         matchedUsers: [{ type: String }],
+        resetPasswordToken: { type: String },
+        resetPasswordExpires: { type: Date },
     },
     {
         timestamps: true, // auto createdAt and updatedAt

@@ -6,6 +6,8 @@ export interface IUserRepository {
     // 5 common database queries for entity
     createUser(userData: Partial<IUser>): Promise<IUser>;
     getUserById(id: string): Promise<IUser | null>;
+    getUserByResetPasswordToken(token: string): Promise<IUser | null>;
+    clearResetPasswordToken(id: string): Promise<void>;
     getUsersByIds(ids: string[]): Promise<IUser[]>;
     getAllUsers(): Promise<IUser[]>;
     getDiscoverUsers(currentUserId: string, targetGender?: string): Promise<IUser[]>;
@@ -31,6 +33,13 @@ export class UserRepository implements IUserRepository {
     async getUserById(id: string): Promise<IUser | null> {
         // UserModel.findOne({ "_id": id });
         const user = await UserModel.findById(id);
+        return user;
+    }
+    async getUserByResetPasswordToken(token: string): Promise<IUser | null> {
+        const user = await UserModel.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: new Date() },
+        });
         return user;
     }
     async getAllUsers(): Promise<IUser[]> {
@@ -87,6 +96,12 @@ export class UserRepository implements IUserRepository {
             id, updateData, { new: true } // return the updated document
         );
         return updatedUser;
+    }
+    async clearResetPasswordToken(id: string): Promise<void> {
+        await UserModel.updateOne(
+            { _id: id },
+            { $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 } }
+        );
     }
     async deleteUser(id: string): Promise<boolean> {
         // UserModel.deleteOne({ _id: id });

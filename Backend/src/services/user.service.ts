@@ -3,10 +3,13 @@ import { UserRepository } from "../repositories/user.repository";
 import  bcryptjs from "bcryptjs"
 import { HttpError } from "../errors/http-error";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../config";
+import { CLIENT_URL, JWT_SECRET } from "../config";
 import { MessageModel } from "../models/message.model";
+import crypto from "crypto";
+import { EmailService } from "./email.service";
 
 let userRepository = new UserRepository();
+const emailService = new EmailService();
 const HARDCODED_ADMIN_EMAIL = "admin@matchaura.com";
 const HARDCODED_ADMIN_PASSWORD = "Admin@123";
 const HARDCODED_ADMIN_USERNAME = "superadmin";
@@ -194,5 +197,49 @@ export class UserService {
         }
         const updatedUser = await userRepository.updateUser(userId, data);
         return updatedUser;
+    }
+
+    async forgotPassword(email: string) {
+        const user = await userRepository.getUserByEmail(email);
+        if (!user) {
+            return;
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const hashedResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+        const resetExpires = new Date(Date.now() + 60 * 60 * 1000);
+
+        await userRepository.updateUser(String(user._id), {
+            resetPasswordToken: hashedResetToken,
+            resetPasswordExpires: resetExpires,
+        });
+
+        const resetLink = `${CLIENT_URL}/reset-password?token=${resetToken}`;
+
+        try {
+            await emailService.sendPasswordResetEmail(user.email, resetLink);
+        } catch {
+            await userRepository.clearResetPasswordToken(String(user._id));
+            throw new HttpError(500, "Failed to send password reset email");
+        }
+    }
+
+    async resetPassword(token: string, newPassword: string) {
+        const hashedResetToken = crypto.createHash("sha256").update(token).digest("hex");
+        const user = await userRepository.getUserByResetPasswordToken(hashedResetToken);
+
+        if (!user) {
+            throw new HttpError(400, "Reset link is invalid or has expired");
+        }
+
+        const hashedPassword = await bcryptjs.hash(newPassword, 10);
+        const updatedUser = await userRepository.updateUser(String(user._id), {
+            password: hashedPassword,
+        });
+        await userRepository.clearResetPasswordToken(String(user._id));
+
+        if (!updatedUser) {
+            throw new HttpError(500, "Failed to reset password");
+        }
     }
 }

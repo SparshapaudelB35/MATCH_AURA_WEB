@@ -1,6 +1,6 @@
 "use server";
-import { fetchDiscoverUsers, fetchWhoAmI, loginUser, registerUser, updateProfile } from "@/lib/api/auth"
-import { LoginData, RegisterData } from "@/app/(auth)/schema"
+import { fetchDiscoverUsers, fetchWhoAmI, forgotPassword, loginUser, registerUser, resetPassword, updateProfile } from "@/lib/api/auth"
+import { ForgotPasswordData, LoginData, RegisterData, ResetPasswordData } from "@/app/(auth)/schema"
 import { setAuthToken, setUserData, clearAuthCookies } from "../cookie"
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -86,6 +86,34 @@ export const handleWhoAmI = async () => {
             success:false,
             message:error.message || 'WhoAmI action failed'
         }
+    }
+}
+
+export const handleForgotPassword = async (data: ForgotPasswordData) => {
+    try {
+        const response = await forgotPassword(data);
+        return {
+            success: response.success ?? true,
+            message: response.message || "If your email is registered, a reset link has been sent."
+        };
+    } catch (error: Error | any) {
+        return { success: false, message: error.message || "Forgot password action failed" };
+    }
+}
+
+export const handleResetPassword = async (token: string, data: ResetPasswordData) => {
+    try {
+        const response = await resetPassword({
+            token,
+            password: data.password,
+            confirmPassword: data.confirmPassword,
+        });
+        return {
+            success: response.success ?? true,
+            message: response.message || "Password reset successful. You can now log in."
+        };
+    } catch (error: Error | any) {
+        return { success: false, message: error.message || "Reset password action failed" };
     }
 }
 

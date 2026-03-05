@@ -113,7 +113,7 @@ export default function LoginForm() {
                 {/* Meta Info */}
                 <div className="flex justify-between text-sm text-zinc-400">
                     <span>Private & secure</span>
-                    <Link href="#" className="hover:text-rose-500 transition">Forgot password?</Link>
+                    <Link href="/forgot-password" className="hover:text-rose-500 transition">Forgot password?</Link>
                 </div>
 
                 {/* Submit Button */}
