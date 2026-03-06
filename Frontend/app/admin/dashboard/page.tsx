@@ -1,5 +1,5 @@
-export default function Page(){
-  return (
-    <div>Only Admin can see</div>
-  )
+import { redirect } from "next/navigation";
+
+export default function Page() {
+  redirect("/admin");
 }

@@ -40,7 +40,7 @@ export async function proxy(req: NextRequest) {
   if (user && isPublicPath) {
     const completed = isOnboardingComplete(user);
     const target = user.role === "admin"
-      ? "/admin/dashboard"
+      ? "/admin"
       : completed
         ? "/auth/dashboard"
         : "/auth/profile";
@@ -49,7 +49,7 @@ export async function proxy(req: NextRequest) {
 
   // 3. Admins should not access user routes
   if (user && isProtectedPath && user.role === "admin") {
-    return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+    return NextResponse.redirect(new URL("/admin", req.url));
   }
 
   // 4. Non-admin users must complete onboarding before dashboard

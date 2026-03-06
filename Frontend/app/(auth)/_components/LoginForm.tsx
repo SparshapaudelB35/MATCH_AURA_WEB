@@ -48,7 +48,7 @@ export default function LoginForm() {
             const isAdmin = res.data?.role === "admin";
             startTransition(() => {
                 if (isAdmin) {
-                    router.push("/admin/dashboard");
+                    router.push("/admin");
                     return;
                 }
                 const needsProfileSetup = !isOnboardingComplete(res.data);
