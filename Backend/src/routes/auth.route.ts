@@ -17,6 +17,7 @@ router.get("/matches", authorizedMiddleware, authController.getMatches);
 router.get("/messages/:userId", authorizedMiddleware, authController.getMessages);
 router.post("/messages/:userId", authorizedMiddleware, authController.sendMessage);
 router.post("/swipe", authorizedMiddleware, authController.swipeUser);
+router.delete("/delete-account", authorizedMiddleware, authController.deleteAccount);
 
 router.put(
     "/update-profile",

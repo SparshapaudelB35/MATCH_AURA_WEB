@@ -199,6 +199,24 @@ export class UserService {
         return updatedUser;
     }
 
+    async deleteAccount(userId: string) {
+        const user = await userRepository.getUserById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
+
+        await MessageModel.deleteMany({
+            $or: [{ senderId: userId }, { receiverId: userId }],
+        });
+
+        await userRepository.removeUserReferences(userId);
+
+        const deleted = await userRepository.deleteUser(userId);
+        if (!deleted) {
+            throw new HttpError(500, "Failed to delete account");
+        }
+    }
+
     async forgotPassword(email: string) {
         const user = await userRepository.getUserByEmail(email);
         if (!user) {

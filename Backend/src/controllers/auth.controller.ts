@@ -275,6 +275,27 @@ export class AuthController {
         }
     }
 
+    async deleteAccount(req: Request, res: Response) {
+        try {
+            const userId = req.user?._id;
+            if (!userId) {
+                return res.status(400).json(
+                    { success: false, message: "User Id Not found" }
+                );
+            }
+
+            await userService.deleteAccount(String(userId));
+            return res.status(200).json({
+                success: true,
+                message: "Account deleted successfully",
+            });
+        } catch (error: Error | any) {
+            return res.status(error.statusCode || 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
     async updateProfile(req: Request, res: Response) {
         try {
             const userId = req.user?._id;

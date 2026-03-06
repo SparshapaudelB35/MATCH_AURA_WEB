@@ -101,6 +101,7 @@ export default function TinderStyleDashboard({
   const [mySelectedGallery, setMySelectedGallery] = useState<SelectedGalleryItem[]>([]);
   const [myInterestsInput, setMyInterestsInput] = useState((me?.interests || []).join(", "));
   const [profileSaving, setProfileSaving] = useState(false);
+  const [deleteAccountLoading, setDeleteAccountLoading] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [matches, setMatches] = useState<MatchUser[]>([]);
   const [selectedMatchId, setSelectedMatchId] = useState<string>("");
@@ -352,6 +353,37 @@ export default function TinderStyleDashboard({
     } finally {
       router.push("/login");
       router.refresh();
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteAccountLoading) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    setDeleteAccountLoading(true);
+    setProfileMessage(null);
+
+    try {
+      const response = await fetch("/api/auth/delete-account", {
+        method: "DELETE",
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to delete account");
+      }
+
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch (error: any) {
+      setProfileMessage(error.message || "Failed to delete account");
+    } finally {
+      setDeleteAccountLoading(false);
     }
   };
 
@@ -1074,13 +1106,24 @@ export default function TinderStyleDashboard({
                     Your profile updates may take a moment to reflect.
                   </p>
 
-                  <button
-                    type="submit"
-                    disabled={profileSaving}
-                    className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {profileSaving ? "Saving..." : "Save Profile"}
-                  </button>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <button
+                      type="button"
+                      onClick={handleDeleteAccount}
+                      disabled={profileSaving || deleteAccountLoading}
+                      className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {deleteAccountLoading ? "Deleting..." : "Delete Account"}
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={profileSaving || deleteAccountLoading}
+                      className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-rose-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {profileSaving ? "Saving..." : "Save Profile"}
+                    </button>
+                  </div>
                 </div>
               </form>
             ) : (

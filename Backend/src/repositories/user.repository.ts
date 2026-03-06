@@ -12,6 +12,7 @@ export interface IUserRepository {
     getAllUsers(): Promise<IUser[]>;
     getDiscoverUsers(currentUserId: string, targetGender?: string): Promise<IUser[]>;
     recordSwipe(userId: string, targetUserId: string, action: "like" | "dislike"): Promise<void>;
+    removeUserReferences(userId: string): Promise<void>;
     updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null>;
     deleteUser(id: string): Promise<boolean>;
 }
@@ -89,6 +90,18 @@ export class UserRepository implements IUserRepository {
                 };
 
         await UserModel.updateOne({ _id: userId }, update);
+    }
+    async removeUserReferences(userId: string): Promise<void> {
+        await UserModel.updateMany(
+            { _id: { $ne: userId } },
+            {
+                $pull: {
+                    likedUsers: userId,
+                    dislikedUsers: userId,
+                    matchedUsers: userId,
+                },
+            }
+        );
     }
     async updateUser(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
         // UserModel.updateOne({ _id: id }, { $set: updateData });
